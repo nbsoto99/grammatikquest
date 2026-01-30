@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="de" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>German Grammar Quest</title>
+
+  <!-- Tailwind CDN for styles -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+
+  <style>
+    body { box-sizing: border-box; font-family: 'Fredoka', sans-serif; }
+    * { font-family: 'Fredoka', sans-serif; }
+    .handwriting { font-family: 'Patrick Hand', cursive; }
+
+    @keyframes float { 0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)} }
+    @keyframes pulse-glow { 0%,100%{box-shadow:0 0 5px rgba(251,191,36,0.5)}50%{box-shadow:0 0 20px rgba(251,191,36,0.8)} }
+    @keyframes shake { 0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)} }
+    .float{animation:float 3s ease-in-out infinite}
+    .pulse-glow{animation:pulse-glow 2s ease-in-out infinite}
+    .shake{animation:shake 0.5s ease-in-out}
+    .celebrate{animation:celebrate 0.6s ease-in-out}
+
+    .station { transition: all 0.3s ease; }
+    .station:hover { transform: scale(1.05); }
+    .station.active { animation: pulse-glow 1.5s ease-in-out infinite; }
+    .station.locked { opacity: 0.4; filter: grayscale(100%); cursor: not-allowed; }
+  </style>
+</head>
+<body class="h-full overflow-auto bg-gradient-to-b from-emerald-200 via-emerald-300 to-emerald-400">
+  <div id="app" class="min-h-full w-full relative p-6">
+    <!-- Start Screen -->
+    <div id="start-screen" class="min-h-full w-full flex flex-col items-center justify-center">
+      <div class="text-8xl mb-4 float">🐲</div>
+      <h1 id="main-title" class="text-4xl md:text-5xl font-bold text-amber-800 text-center mb-4 drop-shadow-lg">Die Grammatik-Quest</h1>
+      <p id="welcome-text" class="text-xl text-amber-700 text-center mb-8 max-w-md handwriting">Hilf dem Dorf! Besiege den bösen Drachen mit deinem Grammatik-Wissen!</p>
+
+      <div class="bg-amber-50 rounded-2xl p-6 shadow-xl border-4 border-amber-300 max-w-md mb-6">
+        <h2 class="text-xl font-bold text-amber-800 mb-3">📜 Deine Mission:</h2>
+        <ul class="text-amber-700 space-y-2">
+          <li>⚔️ Sammle Waffen &amp; Schilde</li>
+          <li>📚 Lerne Modalverben (Präsens &amp; Imperfekt)</li>
+          <li>🗣️ Meistere den Imperativ</li>
+          <li>🐲 Besiege den Troll &amp; den Drachen!</li>
+        </ul>
+      </div>
+
+      <div class="flex flex-col items-center gap-3">
+        <button id="btn-solo" class="bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-xl px-10 py-4 rounded-full shadow-lg transform hover:scale-105 transition-all">🎮 Solo spielen</button>
+        <button id="btn-coop" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-xl px-10 py-4 rounded-full shadow-lg transform hover:scale-105 transition-all">🤝 Co-op Modus (2 Spieler)</button>
+        <button id="btn-pvp" class="bg-gradient-to-r from-red-500 to-rose-500 text-white font-bold text-xl px-10 py-4 rounded-full shadow-lg transform hover:scale-105 transition-all">⚔️ Head-to-Head (PvP)</button>
+      </div>
+    </div>
+
+    <!-- Difficulty -->
+    <div id="difficulty-select" class="hidden min-h-full w-full flex flex-col items-center justify-center">
+      <h1 class="text-4xl font-bold text-amber-800 text-center mb-4">Wähle deinen Schwierigkeitsgrad!</h1>
+      <p class="text-lg text-amber-700 text-center mb-8 handwriting">Wie gut kennst du die deutsche Grammatik?</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl w-full mb-6">
+        <button data-diff="easy" class="diff-btn bg-gradient-to-b from-green-100 to-green-200 rounded-2xl p-6 border-4 border-green-400 shadow-xl">Leicht</button>
+        <button data-diff="normal" class="diff-btn bg-gradient-to-b from-yellow-100 to-yellow-200 rounded-2xl p-6 border-4 border-yellow-400 shadow-xl">Normal</button>
+        <button data-diff="hard" class="diff-btn bg-gradient-to-b from-red-100 to-red-200 rounded-2xl p-6 border-4 border-red-400 shadow-xl">Schwer</button>
+      </div>
+
+      <button id="btn-back-from-difficulty" class="bg-gray-400 hover:bg-gray-500 text-white font-bold px-6 py-3 rounded-full">⬅️ Zurück</button>
+    </div>
+
+    <!-- Character -->
+    <div id="character-select" class="hidden min-h-full w-full flex flex-col items-center justify-center">
+      <h1 class="text-4xl font-bold text-amber-800 text-center mb-4">Wähle deinen Helden!</h1>
+      <p class="text-lg text-amber-700 text-center mb-8 handwriting">Jeder Charakter hat einzigartige Fähigkeiten</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-5xl w-full mb-6">
+        <div class="char card cursor-pointer p-6 rounded-2xl border-4 border-purple-400 shadow-xl" data-char="wizard">
+          <div class="text-7xl text-center mb-3">🧙</div>
+          <h3 class="text-2xl font-bold text-purple-800 text-center mb-2">Zauberer</h3>
+          <div class="bg-white rounded-lg p-3 mb-3">
+            <p class="text-xs text-gray-600">❤️ Leben: 100</p>
+            <p class="text-xs text-gray-600">⚔️ Angriff: Normal</p>
+            <p class="text-xs text-gray-600">🛡️ Verteidigung: Normal</p>
+          </div>
+        </div>
+
+        <div class="char card cursor-pointer p-6 rounded-2xl border-4 border-blue-400 shadow-xl" data-char="knight">
+          <div class="text-7xl text-center mb-3">⚔️</div>
+          <h3 class="text-2xl font-bold text-blue-800 text-center mb-2">Ritter</h3>
+          <div class="bg-white rounded-lg p-3 mb-3">
+            <p class="text-xs text-green-600">❤️ Leben: 120</p>
+            <p class="text-xs text-gray-600">⚔️ Angriff: Normal</p>
+            <p class="text-xs text-red-600">🛡️ Verteidigung: Schwach</p>
+          </div>
+        </div>
+
+        <div class="char card cursor-pointer p-6 rounded-2xl border-4 border-green-400 shadow-xl" data-char="archer">
+          <div class="text-7xl text-center mb-3">🏹</div>
+          <h3 class="text-2xl font-bold text-green-800 text-center mb-2">Bogenschütze</h3>
+          <div class="bg-white rounded-lg p-3 mb-3">
+            <p class="text-xs text-red-600">❤️ Leben: 80</p>
+            <p class="text-xs text-green-600">⚔️ Angriff: +30%</p>
+            <p class="text-xs text-gray-600">🛡️ Verteidigung: Normal</p>
+          </div>
+        </div>
+      </div>
+
+      <button id="btn-back-from-character" class="bg-gray-400 hover:bg-gray-500 text-white font-bold px-6 py-3 rounded-full">⬅️ Zurück</button>
+    </div>
+
+    <!-- Quest map -->
+    <div id="quest-map" class="hidden min-h-full w-full p-6">
+      <div class="bg-amber-900 bg-opacity-90 rounded-xl p-4 mb-4 shadow-xl">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span id="character-icon" class="text-4xl">🧙</span>
+            <div>
+              <div id="character-name" class="text-white font-bold text-lg">Zauberer</div>
+              <div class="flex items-center gap-2">
+                <div class="bg-gray-700 rounded-full h-4 w-32 overflow-hidden">
+                  <div id="health-bar" class="bg-red-500 h-full" style="width:100%"></div>
+                </div>
+                <span id="health-text" class="text-white text-sm font-bold">100/100</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <div class="bg-amber-700 rounded-lg px-4 py-2">
+              <div class="text-amber-200 text-xs">Münzen</div>
+              <div class="text-yellow-300 font-bold text-xl">🪙 <span id="coins">0</span></div>
+            </div>
+            <div class="bg-amber-700 rounded-lg px-4 py-2">
+              <div class="text-amber-200 text-xs">Waffen</div>
+              <div class="text-white font-bold text-xl">⚔️ <span id="weapons">0</span></div>
+            </div>
+            <div class="bg-amber-700 rounded-lg px-4 py-2">
+              <div class="text-amber-200 text-xs">Schilde</div>
+              <div class="text-white font-bold text-xl">🛡️ <span id="shields">0</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-amber-50 rounded-2xl p-6 shadow-xl border-4 border-amber-300 relative" style="min-height:500px;">
+        <h2 class="text-3xl font-bold text-amber-800 text-center mb-4">🗺️ Deine Quest-Reise</h2>
+
+        <div class="relative" style="height:400px; max-width:1100px; margin:0 auto;">
+          <svg class="absolute top-0 left-0 w-full h-full pointer-events-none" style="z-index:1;">
+            <path d="M 70 350 Q 140 280, 210 200 Q 310 100, 420 70 Q 530 50, 640 70 Q 750 100, 850 200 Q 920 280, 990 350" stroke="#d4a574" stroke-width="8" fill="none" stroke-linecap="round" />
+          </svg>
+
+          <!-- stations use data-station attr -->
+          <div class="station active absolute" data-station="1" style="top:310px; left:5px; z-index:10; width:120px;">
+            <div class="bg-green-100 border-4 border-green-400 rounded-xl p-4 cursor-pointer text-center shadow-lg">
+              <div class="text-4xl mb-2">🏘️</div>
+              <div class="font-bold text-xs text-gray-800">Das Dorf</div>
+              <div class="text-xs text-gray-600">Modalverben Präsens</div>
+            </div>
+          </div>
+
+          <div class="station locked absolute" data-station="2" style="top:160px; left:145px; z-index:10; width:120px;">
+            <div class="bg-green-100 border-4 border-green-400 rounded-xl p-4 text-center shadow-lg">
+              <div class="text-4xl mb-2">🌲</div>
+              <div class="font-bold text-xs text-gray-800">Der Wald</div>
+              <div class="text-xs text-gray-600">Imperativ (du)</div>
+            </div>
+          </div>
+
+          <div class="station locked absolute" data-station="3" style="top:30px; left:355px; z-index:10; width:120px;">
+            <div class="bg-orange-100 border-4 border-orange-400 rounded-xl p-4 text-center shadow-lg">
+              <div class="text-4xl mb-2">👹</div>
+              <div class="font-bold text-xs text-gray-800">Troll Kampf</div>
+              <div class="text-xs text-red-600">Gemischte Übung</div>
+            </div>
+          </div>
+
+          <div class="station locked absolute" data-station="4" style="top:10px; left:575px; z-index:10; width:120px;">
+            <div class="bg-blue-100 border-4 border-blue-400 rounded-xl p-4 text-center shadow-lg">
+              <div class="text-4xl mb-2">🌉</div>
+              <div class="font-bold text-xs text-gray-800">Die Brücke</div>
+              <div class="text-xs text-gray-600">Modalverben Imperfekt</div>
+            </div>
+          </div>
+
+          <div class="station locked absolute" data-station="5" style="top:160px; left:785px; z-index:10; width:120px;">
+            <div class="bg-purple-100 border-4 border-purple-400 rounded-xl p-4 text-center shadow-lg">
+              <div class="text-4xl mb-2">🗼</div>
+              <div class="font-bold text-xs text-gray-800">Der Turm</div>
+              <div class="text-xs text-gray-600">Imperativ (ihr/wir/Sie)</div>
+            </div>
+          </div>
+
+          <div class="station locked absolute" data-station="6" style="top:310px; left:925px; z-index:10; width:120px;">
+            <div class="bg-red-100 border-4 border-red-400 rounded-xl p-4 text-center shadow-lg">
+              <div class="text-4xl mb-2">🐲</div>
+              <div class="font-bold text-xs text-gray-800">Der Drache</div>
+              <div class="text-xs text-red-600">Gemischte Übung</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <button id="btn-quit" class="bg-gray-500 hover:bg-gray-600 text-white font-bold px-6 py-3 rounded-full">🏠 Zum Hauptmenü</button>
+      </div>
+    </div>
+
+    <!-- Question Screen (modal) -->
+    <div id="question-screen" class="hidden fixed inset-0 z-50 flex items-start justify-center p-6" style="background:rgba(0,0,0,0.35);">
+      <div class="bg-amber-50 rounded-2xl p-8 shadow-xl border-4 border-amber-300 max-w-3xl w-full mx-auto">
+        <div class="text-center mb-6">
+          <div id="station-emoji" class="text-6xl mb-3">🏘️</div>
+          <h2 id="station-title" class="text-2xl font-bold text-amber-800 mb-2">Das Dorf</h2>
+          <p id="station-description" class="text-gray-600 italic">Modalverben Präsens</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-6 mb-6 shadow-md">
+          <p id="question-text" class="text-xl text-gray-800 font-medium mb-4">Ich ____ Deutsch lernen.</p>
+          <div id="answer-options" class="space-y-3"></div>
+
+          <div id="answer-input-container" class="hidden mt-3">
+            <input id="answer-input" class="w-full border-4 border-gray-300 rounded-lg px-4 py-3 text-lg" placeholder="Tippe deine Antwort hier...">
+          </div>
+        </div>
+
+        <div class="flex gap-3 justify-center">
+          <button id="btn-submit-answer" class="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-lg px-8 py-3 rounded-full">✓ Antworten</button>
+          <button id="btn-hint" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold text-lg px-6 py-3 rounded-full">💡 Hinweis</button>
+        </div>
+
+        <div id="feedback" class="hidden mt-6 p-4 rounded-xl text-center font-bold text-lg"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ---------- Game state ----------
+    let gameState = {
+      mode: 'solo',
+      difficulty: 'normal',
+      character: 'wizard',
+      health: 100,
+      maxHealth: 100,
+      coins: 0,
+      weapons: 0,
+      shields: 0,
+      currentStation: 0,
+      currentQuestionIndex: 0,
+      correctAnswers: 0,
+      selectedAnswer: null
+    };
+
+    // ---------- Data ----------
+    const characters = {
+      wizard: { icon: '🧙', name: 'Zauberer', health: 100 },
+      knight: { icon: '⚔️', name: 'Ritter', health: 120 },
+      archer: { icon: '🏹', name: 'Bogenschütze', health: 80 }
+    };
+
+    const stations = [
+      { id:1, name:'Das Dorf', emoji:'🏘️', topic:'Modalverben Präsens', unlocked:true },
+      { id:2, name:'Der Wald', emoji:'🌲', topic:'Imperativ (du)', unlocked:false},
+      { id:3, name:'Troll Kampf', emoji:'👹', topic:'Gemischte Übung', unlocked:false},
+      { id:4, name:'Die Brücke', emoji:'🌉', topic:'Modalverben Imperfekt', unlocked:false},
+      { id:5, name:'Der Turm', emoji:'🗼', topic:'Imperativ (ihr/wir/Sie)', unlocked:false},
+      { id:6, name:'Der Drache', emoji:'🐲', topic:'Gemischte Übung', unlocked:false}
+    ];
+
+    const questions = {
+      1: [
+        { question: 'Ich ____ Deutsch lernen.', options:['muss','musst','müssen','musste'], correct:0, hint:'Denk an die erste Person Singular!' },
+        { question: 'Du ____ heute nicht arbeiten.', options:['muss','musst','müssen','musste'], correct:1, hint:'Zweite Person Singular braucht ein -st' },
+        { question: 'Maria ____ sehr gut tanzen.', options:['kann','kannst','können','konnte'], correct:0, hint:'Dritte Person Singular wie "er/sie"' },
+        { question: 'Wir ____ ins Kino gehen.', options:['will','willst','wollen','wollte'], correct:2, hint:'Plural-Form gebraucht!' },
+        { question: 'Die Kinder ____ draußen spielen.', options:['darf','darfst','dürfen','durfte'], correct:2, hint:'Plural = dürfen' },
+        { question: 'Thomas ____ ein neues Auto kaufen.', options:['möchte','möchtest','möchten','möchtet'], correct:0, hint:'Er/sie/es Form' },
+        { question: 'Ihr ____ eure Hausaufgaben machen.', options:['soll','sollst','sollen','sollt'], correct:3, hint:'Zweite Person Plural = -t' }
+      ]
+    };
+
+    // ---------- Helpers ----------
+    function normalizeText(text){
+      if(!text) return '';
+      text = String(text).replace(/&auml;|&#228;/gi,'ä').replace(/&ouml;|&#246;/gi,'ö').replace(/&uuml;|&#252;/gi,'ü').replace(/&szlig;|&#223;/gi,'ß');
+      text = text.toLowerCase().trim().replace(/ae/g,'ä').replace(/oe/g,'ö').replace(/ue/g,'ü').replace(/ss/g,'ß');
+      try{ text = text.normalize('NFC'); } catch(e){}
+      return text;
+    }
+
+    function show(el){ el.classList.remove('hidden'); }
+    function hide(el){ el.classList.add('hidden'); }
+
+    function updateHUD(){
+      const ch = characters[gameState.character];
+      document.getElementById('character-icon').textContent = ch.icon;
+      document.getElementById('character-name').textContent = ch.name;
+      document.getElementById('health-text').textContent = `${gameState.health}/${gameState.maxHealth}`;
+      document.getElementById('health-bar').style.width = `${(gameState.health/gameState.maxHealth)*100}%`;
+      document.getElementById('coins').textContent = gameState.coins;
+      document.getElementById('weapons').textContent = gameState.weapons;
+      document.getElementById('shields').textContent = gameState.shields;
+
+      document.getElementById('q-character-icon')?.textContent = ch.icon;
+      document.getElementById('q-health-text')?.textContent = `${gameState.health}/${gameState.maxHealth}`;
+      document.getElementById('q-health-bar')?.style && (document.getElementById('q-health-bar').style.width = `${(gameState.health/gameState.maxHealth)*100}%`);
+    }
+
+    // ---------- Navigation & flow ----------
+    function goToDifficulty(){
+      document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('difficulty-select').classList.remove('hidden');
+    }
+    function goBackFromDifficulty(){
+      document.getElementById('difficulty-select').classList.add('hidden');
+      document.getElementById('start-screen').classList.remove('hidden');
+    }
+    function goToCharacter(){
+      document.getElementById('difficulty-select').classList.add('hidden');
+      document.getElementById('character-select').classList.remove('hidden');
+    }
+    function goBackFromCharacter(){
+      document.getElementById('character-select').classList.add('hidden');
+      document.getElementById('difficulty-select').classList.remove('hidden');
+    }
+    function showQuestMap(){
+      document.getElementById('character-select').classList.add('hidden');
+      document.getElementById('quest-map').classList.remove('hidden');
+      updateHUD();
+    }
+
+    function enterStation(id){
+      const s = stations.find(st => st.id === id);
+      if(!s || !s.unlocked){ alert('Diese Station ist noch gesperrt!'); return; }
+      gameState.currentStation = id;
+      gameState.currentQuestionIndex = 0;
+      gameState.correctAnswers = 0;
+      gameState.selectedAnswer = null;
+
+      document.getElementById('quest-map').classList.add('hidden');
+      show(document.getElementById('question-screen'));
+      loadQuestion();
+    }
+
+    function loadQuestion(){
+      const st = stations.find(s => s.id === gameState.currentStation);
+      const qArr = questions[gameState.currentStation];
+      const q = qArr[gameState.currentQuestionIndex];
+
+      document.getElementById('station-emoji').textContent = st.emoji;
+      document.getElementById('station-title').textContent = st.name;
+      document.getElementById('station-description').textContent = st.topic;
+      document.getElementById('question-number')?.textContent && (document.getElementById('question-number').textContent = (gameState.currentQuestionIndex + 1));
+      document.getElementById('total-questions')?.textContent && (document.getElementById('total-questions').textContent = qArr.length);
+      document.getElementById('question-text').textContent = q.question;
+
+      const container = document.getElementById('answer-options');
+      container.innerHTML = '';
+      q.options.forEach((opt, idx) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'w-full bg-blue-100 hover:bg-blue-200 border-2 border-blue-300 rounded-lg px-4 py-3 text-left font-medium text-gray-800 transition-all';
+        b.textContent = opt;
+        b.addEventListener('click', () => selectAnswer(idx, b));
+        container.appendChild(b);
+      });
+
+      document.getElementById('feedback').classList.add('hidden');
+      gameState.selectedAnswer = null;
+    }
+
+    function selectAnswer(index, btn){
+      const all = document.querySelectorAll('#answer-options button');
+      all.forEach(x => { x.classList.remove('bg-blue-400','border-blue-600'); x.classList.add('bg-blue-100','border-blue-300'); });
+      btn.classList.remove('bg-blue-100','border-blue-300');
+      btn.classList.add('bg-blue-400','border-blue-600');
+      gameState.selectedAnswer = index;
+    }
+
+    function submitAnswer(){
+      if(gameState.selectedAnswer === null){ alert('Bitte wähle eine Antwort!'); return; }
+      const qArr = questions[gameState.currentStation];
+      const q = qArr[gameState.currentQuestionIndex];
+      const feedback = document.getElementById('feedback');
+
+      if(gameState.selectedAnswer === q.correct){
+        feedback.className = 'mt-6 p-4 rounded-xl text-center font-bold text-lg bg-green-100 border-4 border-green-400 text-green-800';
+        feedback.textContent = '✅ Richtig! Gut gemacht!';
+        gameState.correctAnswers++;
+        gameState.coins += 10;
+      } else {
+        feedback.className = 'mt-6 p-4 rounded-xl text-center font-bold text-lg bg-red-100 border-4 border-red-400 text-red-800 shake';
+        feedback.textContent = `❌ Falsch! Die richtige Antwort war: ${q.options[q.correct]}`;
+        gameState.health = Math.max(0, gameState.health - 10);
+      }
+
+      feedback.classList.remove('hidden');
+      updateHUD();
+
+      setTimeout(() => {
+        gameState.currentQuestionIndex++;
+        if(gameState.currentQuestionIndex < qArr.length) loadQuestion();
+        else finishStation();
+      }, 1200);
+    }
+
+    function showHint(){
+      const qArr = questions[gameState.currentStation];
+      const q = qArr[gameState.currentQuestionIndex];
+      alert(`💡 Hinweis: ${q.hint}`);
+    }
+
+    function finishStation(){
+      const qArr = questions[gameState.currentStation];
+      const percentage = (gameState.correctAnswers / qArr.length) * 100;
+      let message = `Station abgeschlossen!\n\nRichtige Antworten: ${gameState.correctAnswers}/${qArr.length}\nGenauigkeit: ${percentage.toFixed(0)}%\n\n`;
+      if(percentage >= 80){ message += '🏆 Hervorragend! +1 Waffe!'; gameState.weapons++; }
+      else if(percentage >= 60){ message += '⭐ Gut gemacht! +1 Schild!'; gameState.shields++; }
+      else { message += '💪 Weiter üben!'; }
+      alert(message);
+
+      const nextId = gameState.currentStation + 1;
+      const nextStation = stations.find(s => s.id === nextId);
+      if(nextStation){ nextStation.unlocked = true; const el = document.querySelector(`.station[data-station="${nextId}"]`); if(el) { el.classList.remove('locked'); el.classList.add('active'); } }
+
+      hide(document.getElementById('question-screen'));
+      document.getElementById('quest-map').classList.remove('hidden');
+      updateHUD();
+    }
+
+    // ---------- Wire listeners (no inline onclicks) ----------
+    document.addEventListener('DOMContentLoaded', () => {
+      // Start buttons
+      document.getElementById('btn-solo').addEventListener('click', () => { gameState.mode = 'solo'; goToDifficulty(); });
+      document.getElementById('btn-coop').addEventListener('click', () => { gameState.mode = 'coop'; goToDifficulty(); });
+      document.getElementById('btn-pvp').addEventListener('click', () => { gameState.mode = 'pvp'; goToDifficulty(); });
+
+      // Difficulty buttons
+      document.querySelectorAll('.diff-btn').forEach(el => el.addEventListener('click', (e) => {
+        gameState.difficulty = el.dataset.diff || (el.textContent||'normal').toLowerCase();
+        goToCharacter();
+      }));
+      document.getElementById('btn-back-from-difficulty').addEventListener('click', goBackFromDifficulty);
+
+      // Characters
+      document.querySelectorAll('.char').forEach(el => {
+        el.addEventListener('click', () => {
+          const char = el.dataset.char || 'wizard';
+          gameState.character = char;
+          gameState.maxHealth = characters[char].health;
+          gameState.health = characters[char].health;
+          showQuestMap();
+        });
+      });
+      document.getElementById('btn-back-from-character').addEventListener('click', goBackFromCharacter);
+
+      // Station clicks
+      document.querySelectorAll('.station').forEach(el => {
+        el.addEventListener('click', () => {
+          const id = parseInt(el.dataset.station, 10);
+          const stObj = stations.find(s => s.id === id);
+          if(stObj && stObj.unlocked) enterStation(id);
+          else alert('Diese Station ist noch gesperrt!');
+        });
+      });
+
+      // map quit
+      document.getElementById('btn-quit').addEventListener('click', () => {
+        if(confirm('Willst du wirklich zum Hauptmenü zurückkehren? Dein Fortschritt geht verloren!')){
+          document.getElementById('quest-map').classList.add('hidden');
+          document.getElementById('start-screen').classList.remove('hidden');
+          // reset minimal
+          gameState = { mode:'solo', difficulty:'normal', character:'wizard', health:100, maxHealth:100, coins:0, weapons:0, shields:0, currentStation:0, currentQuestionIndex:0, correctAnswers:0, selectedAnswer:null };
+          // reset station classes
+          document.querySelectorAll('.station').forEach(el => {
+            const id = Number(el.dataset.station);
+            const s = stations.find(ss => ss.id === id);
+            if(s && s.unlocked && id === 1){ el.classList.add('active'); el.classList.remove('locked'); }
+            else if(s && !s.unlocked){ el.classList.add('locked'); el.classList.remove('active'); }
+          });
+          updateHUD();
+        }
+      });
+
+      // Question screen controls
+      document.getElementById('btn-submit-answer').addEventListener('click', submitAnswer);
+      document.getElementById('btn-hint').addEventListener('click', showHint);
+
+      updateHUD();
+
+      // Make sure UI reflects unlocked stations array
+      document.querySelectorAll('.station').forEach(el => {
+        const id = Number(el.dataset.station);
+        const s = stations.find(ss => ss.id === id);
+        if(s){ if(s.unlocked){ el.classList.remove('locked'); el.classList.add('active'); } else { el.classList.add('locked'); el.classList.remove('active'); } }
+      });
+    });
+  </script>
+</body>
+</html>
